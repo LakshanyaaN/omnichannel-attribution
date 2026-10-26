@@ -1,0 +1,55 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ipynb_checkpoints/
+.coverage
+htmlcov/
+
+# ---------- Generated data (rebuilt from the fixed seed) ----------
+core/generator/output/
+data/
+*.csv
+*.jsonl
+*.parquet
+!core/tests/fixtures/*.csv
+
+# ---------- Database dumps and volumes ----------
+*.dump
+*.backup
+*.sql.gz
+pgdata/
+mongodata/
+volumes/
+
+# ---------- Secrets and certificates ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.csr
+certs/
+
+# ---------- Logs ----------
+*.log
+logs/
+
+# ---------- Charts and build output ----------
+docs/build/
+*.aux
+*.out
+*.toc
+
+# ---------- Editors and OS ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
