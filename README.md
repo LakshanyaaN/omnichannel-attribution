@@ -68,7 +68,7 @@ cd omnichannel-attribution
 
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r core/generator/requirements.txt
+pip install -r requirements.txt
 
 make up          # start PostgreSQL (core)
 make load        # generate data and load the schema and data
