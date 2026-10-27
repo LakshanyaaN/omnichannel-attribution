@@ -1,0 +1,16 @@
+# Core (Person A)
+pandas>=2.2
+numpy>=1.26
+Faker>=24.0
+psycopg2-binary>=2.9
+python-dotenv>=1.0
+
+# Extensions (Person B)
+pymongo>=4.6
+neo4j>=5.20
+redis>=5.0
+pgvector>=0.2
+scikit-learn>=1.4
+matplotlib>=3.8
+# Optional, heavier: real text embeddings for vector search
+# sentence-transformers>=2.7

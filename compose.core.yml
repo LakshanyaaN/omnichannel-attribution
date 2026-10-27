@@ -1,0 +1,30 @@
+# Core stack (Person A). Runs on its own: no extension service is needed.
+services:
+  db:
+    build:
+      context: ./core/docker
+      dockerfile: Dockerfile.postgres
+    container_name: attribution-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-attribution}
+    # pg_cron must be preloaded; it runs its jobs in the database named below
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_cron
+      -c cron.database_name=${POSTGRES_DB:-attribution}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # *.sql files here run in name order, once, when the data volume is first created
+      - ./core/sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-attribution}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
