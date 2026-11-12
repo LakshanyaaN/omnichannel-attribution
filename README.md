@@ -1,120 +1,82 @@
-# Omnichannel Marketing Attribution & ROAS Optimization Engine
+# Omnichannel Marketing Attribution Engine & Analytics Warehouse
 
-A marketing attribution data warehouse built on PostgreSQL 16, with MongoDB, Neo4j, Redis and a Next.js web app around it. It ingests synthetic clickstream data (impressions, clicks, purchases, refunds) from Google, Meta, TikTok and Email, and applies multi-touch attribution models to calculate the true Return on Ad Spend (ROAS) per platform.
+An enterprise-grade analytical data warehouse and attribution engine built to solve the multi-touch attribution problem in modern digital advertising. Designed for the PES University DBMS Experiential Learning curriculum (Units 1–4).
 
-Last-click attribution gives 100% of the credit to the final touchpoint, which undervalues upper-funnel channels such as Meta and TikTok. This project distributes revenue credit across every touchpoint in a customer's journey instead.
+---
 
-> All data is synthetic. Results demonstrate the method, not real-world channel performance.
+## 1. Problem Statement
+Modern consumers rarely convert on their first interaction. A customer might discover a brand on **Meta**, compare alternatives on **TikTok**, read a promotional newsletter via **Email**, and finally purchase after clicking a **Google Search** ad. 
 
-## Features
+Traditional **last-click attribution** credits 100% of the sale to Google, severely undervaluing upper-funnel channels and causing misallocated marketing budgets. This engine models customer journeys and re-attributes conversion revenues across four mathematical attribution models:
+- **First-Touch Attribution:** 100% credit to the initial discovery channel.
+- **Last-Touch Attribution:** 100% credit to the final conversion touchpoint.
+- **Linear Attribution:** Uniformly distributed credit across all eligible touchpoints.
+- **Time-Decay Attribution:** Exponentially decays credit with a 7-day half-life based on temporal proximity to conversion.
 
-- Four attribution models in SQL: First-Touch, Last-Touch, Linear and Time-Decay (30-day lookback window)
-- ROAS per platform and per model, computed from attributed net revenue and daily campaign spend
-- Star schema with CTEs, window functions and a recursive CTE for journey paths
-- Materialized views refreshed on a schedule with pg_cron
-- Stored procedures and triggers for deduplicated ingestion, refund adjustment and auditing
-- Pessimistic locking (`SELECT ... FOR UPDATE`) and an isolation-level demo for concurrent budget updates
-- Query tuning with `EXPLAIN ANALYZE`
-- Normalization analysis (functional dependencies, 1NF to BCNF) and relational algebra for key queries
-- Full-text search on campaign and creative names
-- NoSQL layer: MongoDB raw events, Redis key-value cache, Neo4j customer-journey graph
-- Vector search over ad-creative embeddings (pgvector and a NoSQL vector index) to find similar creatives and compare their ROAS
-- Next.js web application over read-only SQL views
+---
 
-## Tech stack
-
-| Area | Tools |
-|---|---|
-| Relational | PostgreSQL 16, pg_cron, pgvector |
-| NoSQL | MongoDB, Redis, Neo4j |
-| Languages | SQL, PL/pgSQL, Python (Faker, Pandas, NumPy, Matplotlib), TypeScript |
-| Web | Next.js |
-| Infrastructure | Docker Compose |
-
-## Repository layout
+## 2. System Architecture
 
 ```
-.
-├── core/                  # Core warehouse (Person A)
-│   ├── sql/               # Schema, indexes, api views, models, procedures, triggers
-│   ├── generator/         # Synthetic data generator (fixed random seed)
-│   └── tests/             # Core smoke tests
-├── ext/                   # Extension modules (Person B)
-│   ├── mongodb/
-│   ├── fts/
-│   ├── vector/
-│   ├── neo4j/
-│   ├── redis/
-│   ├── webapp/            # Next.js application
-│   ├── qa/                # Charts and independent checks
-│   └── optional/          # Security, replication, recovery (if time allows)
-├── docs/                  # ER/EER diagrams, synopsis, normalization notes, report
-├── compose.core.yml       # PostgreSQL 16 with pg_cron and pgvector
-├── compose.ext.yml        # MongoDB, Neo4j, Redis
-├── requirements.txt
-├── Makefile
-└── README.md
+                       [ Synthetic Data Generator ]
+                                    |
+                    +---------------+---------------+
+                    | (Raw JSON)                    | (Clean Relational CSV)
+                    v                               v
+          [ MongoDB 7.0 ]                 [ PostgreSQL 16 (Star Schema) ]
+       raw_clickstream_events                  |-- dim_user
+        (Full RUD Operations)                  |-- dim_campaign (Paid & Email)
+                                               |-- dim_creative (pgvector + FTS)
+                                               |-- dim_date
+                                               |-- fact_touchpoint
+                                               |-- fact_conversion
+                                               |-- fact_refund (Triggers)
+                                               |-- fact_spend
+                                                    |
+                                          [ Advanced SQL Engine ]
+                                          |-- Window Functions (4 Models)
+                                          |-- Recursive CTE (Journeys)
+                                          |-- Concurrency / Row-Locking
+                                                    |
+                                          [ Next.js 15 Web App ]
+                                          |-- Role-Based Access (Analyst vs Manager)
+                                          |-- Interactive ROAS Analytics
+                                          |-- Semantic Vector Search
 ```
 
-## Architecture rules
+---
 
-The project is split so the core always works, even if an extension breaks.
+## 3. Technology Stack & Prerequisites
 
-1. The core lives in the `core` schema and the extensions live in the `ext` schema. Nothing in `core` references `ext`.
-2. Extensions and the web app read the core only through read-only `api_*` views (`api_touchpoints`, `api_conversions`, `api_roas`, `api_creatives`).
-3. The core runs from `compose.core.yml`. Extension services run from `compose.ext.yml`.
-4. The generator writes CSV for PostgreSQL and JSONL for MongoDB. The core loads only from CSV.
-5. A fixed random seed regenerates identical data, so any module can be rebuilt from scratch.
+- **Relational OLAP Warehouse:** PostgreSQL 16 with `pgvector`
+- **NoSQL Staging Store:** MongoDB 7.0
+- **Frontend / Application Backend:** Next.js 15 (React 19, TypeScript, Tailwind CSS, Recharts)
+- **Containerization:** Docker Compose
+- **Programming & Data Ingestion:** Python 3.10+ (`pandas`, `numpy`, `faker`, `pymongo`, `psycopg2-binary`)
 
-## Getting started
+---
 
-Requirements: Docker, Docker Compose, Python 3.11+, Node.js (for the web app), make.
+## 4. Quickstart
 
+### 1. Clone the repository
 ```bash
-git clone <repo-url>
+git clone https://github.com/LakshanyaaN/omnichannel-attribution.git
 cd omnichannel-attribution
-
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-make up          # start PostgreSQL (core)
-make load        # generate data, then load the schema and data
-make test-core   # run core checks (credit sums to 100% per conversion)
 ```
 
-Extensions are optional:
-
+### 2. Start PostgreSQL and MongoDB
 ```bash
-make up-ext      # start MongoDB, Neo4j and Redis
-make web         # start the Next.js app
+docker compose up -d
 ```
 
-The Makefile targets above are planned and will be added as the project is built (see Status).
+### 3. Initialize Schema and Extensions
+The schema and RBAC roles initialize automatically via scripts mounted into `/docker-entrypoint-initdb.d/`.
 
-## Attribution models
+---
 
-| Model | Credit rule |
-|---|---|
-| First-Touch | 100% to the earliest touchpoint in the lookback window |
-| Last-Touch | 100% to the latest touchpoint before the conversion |
-| Linear | Equal share to every touchpoint in the window |
-| Time-Decay | Weight decreases with the age of the touchpoint, normalized to 100% |
+## 5. Academic Syllabus & Rubric Traceability
 
-Each conversion's credit always sums to its revenue (net of refunds).
-
-## Status
-
-- [ ] Schema, ER design
-- [ ] Synthetic data generator
-- [ ] Attribution models
-- [ ] Materialized views and scheduling
-- [ ] Procedures and triggers
-- [ ] Concurrency and isolation demo
-- [ ] Query optimization report
-- [ ] Normalization document and relational algebra
-- [ ] Full-text search
-- [ ] MongoDB, Redis and Neo4j layers
-- [ ] Vector search
-- [ ] Next.js web application
-- [ ] Charts, QA and final report
+- **Unit 1:** Star Schema design, Relational Algebra, DDL with Keys, CHECK & UNIQUE constraints, Generated Columns.
+- **Unit 2:** Window functions (`FIRST_VALUE`, `SUM() OVER`), Recursive CTE (journey paths), Correlated subqueries, Multi-table joins, Triggers (`trg_deduct_refund`), Stored Procedures (`sp_ingest_touchpoints`), Full-Text Search.
+- **Unit 3:** Functional dependencies, Normalization to BCNF, Query optimization with `EXPLAIN (ANALYZE, BUFFERS)` and composite index tuning.
+- **Unit 4:** Pessimistic row-locking (`SELECT FOR UPDATE`), MongoDB document modeling with full **RUD**, Semantic Vector Search with `pgvector`, and Next.js full-stack app with dual-role database-enforced RBAC.

@@ -1,55 +1,57 @@
-# ---------- Python ----------
-__pycache__/
-*.py[cod]
-*.egg-info/
-.venv/
-venv/
-env/
-.pytest_cache/
-.ipynb_checkpoints/
-.coverage
-htmlcov/
-
-# ---------- Generated data (rebuilt from the fixed seed) ----------
-core/generator/output/
-data/
-*.csv
-*.jsonl
-*.parquet
-!core/tests/fixtures/*.csv
-
-# ---------- Database dumps and volumes ----------
-*.dump
-*.backup
-*.sql.gz
-pgdata/
-mongodata/
-volumes/
-
-# ---------- Secrets and certificates ----------
+# Environment & Credentials
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
 *.pem
 *.key
-*.crt
-*.csr
-certs/
 
-# ---------- Logs ----------
-*.log
-logs/
+# Docker & Database Volumes
+postgres_data/
+mongo_data/
 
-# ---------- Charts and build output ----------
-docs/build/
-*.aux
-*.out
-*.toc
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+venv/
+ENV/
+.venv/
 
-# ---------- Editors and OS ----------
+# Node & Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE & OS
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 .DS_Store
 Thumbs.db
