@@ -10,10 +10,18 @@ Validates Rubric Component 9 (7 Marks):
 import os
 import sys
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import numpy as np
 import psycopg2
 from pymongo import MongoClient
+
+# Ensure UTF-8 output on Windows consoles
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 # Database Connection Configurations
 PG_HOST = os.getenv("POSTGRES_HOST", "localhost")
@@ -49,7 +57,7 @@ def test_mongodb_rud():
     print(f" -> Found Session ID: {sample_event.get('session_id')}")
     print(f" -> Platform: {sample_event.get('platform')}, Cost: ${sample_event.get('cost')}")
     print(f" -> Nested Device: {sample_event.get('payload', {}).get('device')}")
-    print(" [✓] PASS [1/7]: MongoDB Nested READ Verified.")
+    print(" [PASS] [1/7]: MongoDB Nested READ Verified.")
 
     # --- 2. UPDATE: In-place modification ($set, $inc, $currentDate) ---
     print("\n[*] 2. Testing MongoDB UPDATE (U)...")
@@ -74,7 +82,7 @@ def test_mongodb_rud():
     assert updated_doc["audit_retry_count"] >= 1
     print(f" -> Updated Session {target_session} to status: {updated_doc['status']}")
     print(f" -> Enriched nested fraud score: {updated_doc['bot_analysis']['confidence_score']}")
-    print(" [✓] PASS [2/7]: MongoDB In-Place UPDATE Verified.")
+    print(" [PASS] [2/7]: MongoDB In-Place UPDATE Verified.")
 
     # --- 3. DELETE: Targeted cleanup of bot / quarantined logs ---
     print("\n[*] 3. Testing MongoDB DELETE (D)...")
@@ -86,7 +94,7 @@ def test_mongodb_rud():
         "event_type": "CLICK",
         "cost": 0.0,
         "status": "QUARANTINED_BOT",
-        "received_at": datetime.utcnow().isoformat()
+        "received_at": datetime.now(timezone.utc).isoformat()
     })
     
     # Confirm insertion
@@ -99,7 +107,7 @@ def test_mongodb_rud():
     # Confirm deletion
     assert coll.find_one({"session_id": bot_session}) is None
     print(f" -> Successfully quarantined and deleted test bot session: {bot_session}")
-    print(" [✓] PASS [3/7]: MongoDB DELETE Verified.")
+    print(" [PASS] [3/7]: MongoDB DELETE Verified.")
 
     # --- 4. ADVANCED: MongoDB Aggregation Pipeline ---
     print("\n[*] 4. Testing MongoDB Aggregation Pipeline...")
@@ -119,7 +127,7 @@ def test_mongodb_rud():
     assert len(agg_results) > 0, "Aggregation returned 0 results!"
     for row in agg_results:
         print(f" -> Channel: {row['_id']:<8} | Clicks: {row['total_clicks']:<6} | Avg CPC: ${row['avg_cost_per_click']:.2f}")
-    print(" [✓] PASS [4/7]: MongoDB Multi-Stage Aggregation Pipeline Verified.")
+    print(" [PASS] [4/7]: MongoDB Multi-Stage Aggregation Pipeline Verified.")
 
 def test_pgvector_rud():
     print_header("PART 2: POSTGRESQL PGVECTOR FEATURE RUD OPERATIONS")
@@ -139,14 +147,16 @@ def test_pgvector_rud():
             WITH ref AS (
                 SELECT headline, embedding 
                 FROM dim_creative 
+                WHERE embedding IS NOT NULL
                 LIMIT 1
             )
             SELECT 
                 c.headline,
-                ROUND((1 - (c.embedding <=> ref.embedding))::numeric, 4) AS cosine_similarity
+                COALESCE(ROUND((1 - (c.embedding <=> ref.embedding))::numeric, 4), 0.0000) AS cosine_similarity
             FROM dim_creative c
             CROSS JOIN ref
             WHERE c.headline <> ref.headline
+              AND c.embedding IS NOT NULL
             ORDER BY c.embedding <=> ref.embedding ASC
             LIMIT 3;
         """)
@@ -154,13 +164,14 @@ def test_pgvector_rud():
         assert len(top_similar) > 0, "Vector similarity query returned no results!"
         print(" -> Reference Creative: Top 3 Semantically Similar Headlines:")
         for headline, sim in top_similar:
-            print(f"    * Similarity: {sim:.4f} | Headline: '{headline}'")
-        print(" [✓] PASS [5/7]: pgvector Semantic Cosine Similarity READ Verified.")
+            sim_val = float(sim) if sim is not None else 0.0
+            print(f"    * Similarity: {sim_val:.4f} | Headline: '{headline}'")
+        print(" [PASS] [5/7]: pgvector Semantic Cosine Similarity READ Verified.")
 
         # --- 6. VECTOR UPDATE: In-place Embedding Modification ---
         print("\n[*] 6. Testing pgvector UPDATE (Embedding Mutation)...")
-        # Fetch one creative
-        cur.execute("SELECT creative_id, headline, embedding FROM dim_creative LIMIT 1;")
+        # Fetch one creative with valid embedding
+        cur.execute("SELECT creative_id, headline, embedding FROM dim_creative WHERE embedding IS NOT NULL LIMIT 1;")
         c_id, old_headline, old_emb = cur.fetchone()
 
         # Generate a distinct updated vector (normalized)
@@ -183,7 +194,7 @@ def test_pgvector_rud():
         print(f" -> Updated Creative ID: {c_id}")
         print(f" -> Old Headline: '{old_headline}'")
         print(f" -> New Headline: '{updated_headline}'")
-        print(" [✓] PASS [6/7]: pgvector Embedding UPDATE Verified.")
+        print(" [PASS] [6/7]: pgvector Embedding UPDATE Verified.")
 
         # --- 7. VECTOR DELETE: Removal of Creative and Vector Space Cleanup ---
         print("\n[*] 7. Testing pgvector DELETE (Vector Removal)...")
@@ -210,7 +221,7 @@ def test_pgvector_rud():
         remaining = cur.fetchone()[0]
         assert remaining == 0, "Failed to delete vector creative!"
         print(f" -> Successfully deleted temporary vector creative: {temp_id}")
-        print(" [✓] PASS [7/7]: pgvector Vector Record DELETE Verified.")
+        print(" [PASS] [7/7]: pgvector Vector Record DELETE Verified.")
 
     finally:
         cur.close()

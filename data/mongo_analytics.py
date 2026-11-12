@@ -8,7 +8,16 @@ Demonstrates Unit 4 Advanced NoSQL Aggregations:
 """
 
 import os
+import sys
 from pymongo import MongoClient
+
+# Ensure UTF-8 output on Windows consoles
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 MONGO_URI = os.getenv(
     "MONGO_URI",
@@ -89,7 +98,7 @@ def run_mongo_analytics():
         print(" * No suspicious high-frequency IP clusters detected.")
 
     print("\n=================================================================")
-    print(" [✓] MongoDB Aggregation Analysis Completed Successfully!")
+    print(" [PASS] MongoDB Aggregation Analysis Completed Successfully!")
     print("=================================================================")
 
 if __name__ == "__main__":

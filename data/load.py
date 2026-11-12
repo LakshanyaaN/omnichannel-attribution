@@ -14,6 +14,14 @@ import psycopg2
 from psycopg2.extras import execute_values
 from pymongo import MongoClient
 
+# Ensure UTF-8 output on Windows consoles
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 # Database Configuration
 PG_HOST = os.getenv("POSTGRES_HOST", "localhost")
 PG_PORT = os.getenv("POSTGRES_PORT", "5433")
@@ -196,7 +204,7 @@ def load_postgresql(data_dir="data/output"):
         )
 
         conn.commit()
-        print("[✓] PostgreSQL warehouse populated successfully!")
+        print("[OK] PostgreSQL warehouse populated successfully!")
 
     except Exception as e:
         conn.rollback()
@@ -227,7 +235,7 @@ def load_mongodb(data_dir="data/output"):
         coll.create_index([("session_id", 1)])
         coll.create_index([("received_at", -1)])
         coll.create_index([("platform", 1)])
-        print(f"[✓] Loaded {len(events)} events into MongoDB collection: raw_clickstream_events")
+        print(f"[OK] Loaded {len(events)} events into MongoDB collection: raw_clickstream_events")
 
 def main():
     data_dir = sys.argv[1] if len(sys.argv) > 1 else "data/output"
@@ -238,7 +246,7 @@ def main():
     load_postgresql(data_dir)
     load_mongodb(data_dir)
     print("=========================================================")
-    print("[✓] All database loads completed successfully!")
+    print("[OK] All database loads completed successfully!")
     print("=========================================================")
 
 if __name__ == "__main__":

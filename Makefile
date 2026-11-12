@@ -26,14 +26,10 @@ load:
 	python data/load.py
 
 test:
-	@echo "Running Schema and Constraint Tests..."
-	docker exec -i attribution_postgres psql -U postgres -d attribution_db < tests/01_schema_test.sql
-	@echo "Running Phase 2 Advanced SQL & Programmability Tests..."
-	docker exec -i attribution_postgres psql -U postgres -d attribution_db < tests/02_attribution_test.sql
-	@echo "Running Phase 3 NoSQL & Vector RUD Tests..."
-	python tests/03_nosql_vector_rud_test.py
-	@echo "Running Phase 4 Concurrency & Row-Locking Tests..."
-	python tests/04_concurrency_test.py
+	python tests/run_all_tests.py
+
+test-all:
+	python tests/run_all_tests.py
 
 concurrency:
 	docker exec -i attribution_postgres psql -U postgres -d attribution_db < sql/07_concurrency_locking.sql

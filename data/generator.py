@@ -16,6 +16,14 @@ import numpy as np
 import pandas as pd
 from faker import Faker
 
+# Ensure UTF-8 output on Windows consoles
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 fake = Faker()
 Faker.seed(42)
 random.seed(42)
@@ -306,7 +314,7 @@ def main():
     # 1. Date Dimension
     df_date = generate_date_dimension()
     df_date.to_csv(os.path.join(args.outdir, "dim_date.csv"), index=False)
-    print(f"[✓] Generated dim_date: {len(df_date)} rows")
+    print(f"[OK] Generated dim_date: {len(df_date)} rows")
 
     # 2. Campaigns & Creatives
     df_camp, df_paid, df_email, df_creat = generate_campaigns_and_creatives()
@@ -314,7 +322,7 @@ def main():
     df_paid.to_csv(os.path.join(args.outdir, "dim_paid_campaign.csv"), index=False)
     df_email.to_csv(os.path.join(args.outdir, "dim_email_campaign.csv"), index=False)
     df_creat.to_csv(os.path.join(args.outdir, "dim_creative.csv"), index=False)
-    print(f"[✓] Generated campaigns ({len(df_camp)}) & creatives ({len(df_creat)})")
+    print(f"[OK] Generated campaigns ({len(df_camp)}) & creatives ({len(df_creat)})")
 
     # 3. Journeys, Touchpoints, Conversions, Refunds, MongoDB Events
     df_user, df_touch, df_conv, df_refund, raw_mongo = generate_customer_journeys(
@@ -324,24 +332,24 @@ def main():
     df_touch.to_csv(os.path.join(args.outdir, "fact_touchpoint.csv"), index=False)
     df_conv.to_csv(os.path.join(args.outdir, "fact_conversion.csv"), index=False)
     df_refund.to_csv(os.path.join(args.outdir, "fact_refund.csv"), index=False)
-    print(f"[✓] Generated dim_user: {len(df_user)} rows")
-    print(f"[✓] Generated fact_touchpoint: {len(df_touch)} rows")
-    print(f"[✓] Generated fact_conversion: {len(df_conv)} rows")
-    print(f"[✓] Generated fact_refund: {len(df_refund)} rows")
+    print(f"[OK] Generated dim_user: {len(df_user)} rows")
+    print(f"[OK] Generated fact_touchpoint: {len(df_touch)} rows")
+    print(f"[OK] Generated fact_conversion: {len(df_conv)} rows")
+    print(f"[OK] Generated fact_refund: {len(df_refund)} rows")
 
     # 4. Daily Spend
     df_spend = generate_daily_spend(df_camp)
     df_spend.to_csv(os.path.join(args.outdir, "fact_spend.csv"), index=False)
-    print(f"[✓] Generated fact_spend: {len(df_spend)} rows")
+    print(f"[OK] Generated fact_spend: {len(df_spend)} rows")
 
     # 5. Raw Clickstream JSON for MongoDB
     mongo_file = os.path.join(args.outdir, "raw_clickstream.json")
     with open(mongo_file, "w") as f:
         json.dump(raw_mongo, f, indent=2)
-    print(f"[✓] Saved MongoDB raw events: {len(raw_mongo)} records -> {mongo_file}")
+    print(f"[OK] Saved MongoDB raw events: {len(raw_mongo)} records -> {mongo_file}")
 
     print("=========================================================")
-    print("[✓] All synthetic datasets generated successfully!")
+    print("[OK] All synthetic datasets generated successfully!")
     print("=========================================================")
 
 if __name__ == "__main__":

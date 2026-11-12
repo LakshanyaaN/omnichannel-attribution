@@ -14,6 +14,14 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import psycopg2
 
+# Ensure UTF-8 output on Windows consoles
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 # Database Connection Configurations
 PG_HOST = os.getenv("POSTGRES_HOST", "localhost")
 PG_PORT = os.getenv("POSTGRES_PORT", "5433")
@@ -158,7 +166,7 @@ def main():
     print("\n[+] Thread Execution Results:")
     print("-" * 70)
     for r in results:
-        status_symbol = "[✓] APPROVED" if r["success"] else "[✗] DECLINED"
+        status_symbol = "[APPROVED]" if r["success"] else "[DECLINED]"
         print(f" Thread #{r['thread_id']} -> {status_symbol:<14} | {r['message']}")
 
     # 4. Verify Final State in PostgreSQL
@@ -182,7 +190,7 @@ def main():
     assert abs(final_budget - 50.00) < 0.01, f"Expected $50.00 remaining, got ${final_budget:.2f}"
 
     print("\n" + "=" * 70)
-    print(" [✓] CONCURRENCY & ROW-LOCKING INTEGRITY CHECK PASSED (100% CONSISTENT)!")
+    print(" [PASS] CONCURRENCY & ROW-LOCKING INTEGRITY CHECK PASSED (100% CONSISTENT)!")
     print("     Zero lost updates. Zero negative balance. Clean transaction serialization.")
     print("=" * 70)
 
