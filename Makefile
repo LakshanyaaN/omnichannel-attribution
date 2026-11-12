@@ -30,6 +30,14 @@ test:
 	docker exec -i attribution_postgres psql -U postgres -d attribution_db < tests/01_schema_test.sql
 	@echo "Running Phase 2 Advanced SQL & Programmability Tests..."
 	docker exec -i attribution_postgres psql -U postgres -d attribution_db < tests/02_attribution_test.sql
+	@echo "Running Phase 3 NoSQL & Vector RUD Tests..."
+	python tests/03_nosql_vector_rud_test.py
+
+vector:
+	docker exec -i attribution_postgres psql -U postgres -d attribution_db < sql/06_vector_search.sql
+
+analytics:
+	python data/mongo_analytics.py
 
 clean:
 	docker compose down -v
