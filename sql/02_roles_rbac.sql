@@ -5,20 +5,16 @@
 --              Enforces least privilege between Analyst and Marketing Manager.
 -- ============================================================================
 
--- Drop existing roles if necessary
+-- Create roles if they do not already exist
 DO $$
 BEGIN
-    IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_analyst') THEN
-        DROP ROLE app_analyst;
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_analyst') THEN
+        CREATE ROLE app_analyst WITH LOGIN PASSWORD 'analyst_password_2026';
     END IF;
-    IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_manager') THEN
-        DROP ROLE app_manager;
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_manager') THEN
+        CREATE ROLE app_manager WITH LOGIN PASSWORD 'manager_password_2026';
     END IF;
 END $$;
-
--- 1. Create Roles with Login Privileges
-CREATE ROLE app_analyst WITH LOGIN PASSWORD 'analyst_password_2026';
-CREATE ROLE app_manager WITH LOGIN PASSWORD 'manager_password_2026';
 
 -- 2. Schema Usage Grants
 GRANT USAGE ON SCHEMA public TO app_analyst;

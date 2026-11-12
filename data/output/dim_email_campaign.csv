@@ -1,0 +1,4 @@
+campaign_id,sender_domain,template_id,audience_segment
+053bc9b3-e056-422f-b15f-0255b14ce250,news.attribution-analytics.com,tmpl_po_104,NEW_SIGNUPS
+c3eae9b0-05a5-4e8c-b4d8-375644bcdd59,news.attribution-analytics.com,tmpl_fL_218,NEW_SIGNUPS
+2ed105dc-9b2b-4ac6-a7d5-e419073c9cff,news.attribution-analytics.com,tmpl_fn_600,WIN_BACK

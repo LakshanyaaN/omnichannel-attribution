@@ -32,7 +32,7 @@ CREATE TABLE dim_user (
     email VARCHAR(255) UNIQUE NOT NULL,
     country VARCHAR(3) NOT NULL CHECK (char_length(country) = 3), -- ISO alpha-3
     device_preference VARCHAR(20) DEFAULT 'MOBILE' CHECK (device_preference IN ('MOBILE', 'DESKTOP', 'TABLET')),
-    first_seen_ts TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    first_seen_ts TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Dimension: Campaign Superclass
@@ -41,7 +41,7 @@ CREATE TABLE dim_campaign (
     name VARCHAR(150) NOT NULL,
     channel VARCHAR(30) NOT NULL CHECK (channel IN ('Google', 'Meta', 'TikTok', 'Email')),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_campaign_name UNIQUE (name)
 );
 
@@ -74,7 +74,7 @@ CREATE TABLE dim_creative (
     ) STORED,
     -- 384-dimensional dense vector embedding (e.g. all-MiniLM-L6-v2)
     embedding vector(384),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- Unique compound key for composite foreign key constraint
     CONSTRAINT uq_creative_campaign UNIQUE (creative_id, campaign_id)
 );
@@ -104,8 +104,8 @@ CREATE TABLE fact_touchpoint (
     creative_id UUID NOT NULL,
     event_type VARCHAR(20) NOT NULL CHECK (event_type IN ('IMPRESSION', 'CLICK')),
     cost NUMERIC(10, 4) NOT NULL CHECK (cost >= 0),
-    touchpoint_ts TIMESTAMPTZ NOT NULL,
-    -- Generated date column for fast date partitioning / joining
+    touchpoint_ts TIMESTAMP NOT NULL,
+    -- Generated date column (IMMUTABLE for TIMESTAMP)
     touchpoint_date DATE GENERATED ALWAYS AS (touchpoint_ts::DATE) STORED,
     -- Compound foreign key ensures creative belongs to declared campaign
     CONSTRAINT fk_touchpoint_creative_campaign 
@@ -123,7 +123,7 @@ CREATE TABLE fact_conversion (
     gross_revenue NUMERIC(12, 2) NOT NULL CHECK (gross_revenue > 0),
     net_revenue NUMERIC(12, 2) NOT NULL CHECK (net_revenue >= 0),
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
-    conversion_ts TIMESTAMPTZ NOT NULL,
+    conversion_ts TIMESTAMP NOT NULL,
     conversion_date DATE GENERATED ALWAYS AS (conversion_ts::DATE) STORED,
     lookback_window_days INT NOT NULL DEFAULT 30 CHECK (lookback_window_days > 0),
     CONSTRAINT chk_net_lte_gross CHECK (net_revenue <= gross_revenue)
@@ -134,7 +134,7 @@ CREATE TABLE fact_refund (
     refund_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     conversion_id UUID NOT NULL REFERENCES fact_conversion(conversion_id) ON DELETE RESTRICT,
     refund_amount NUMERIC(12, 2) NOT NULL CHECK (refund_amount > 0),
-    refund_ts TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    refund_ts TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     reason VARCHAR(100) DEFAULT 'CUSTOMER_RETURN'
 );
 
@@ -159,7 +159,7 @@ CREATE TABLE audit_log (
     old_data JSONB,
     new_data JSONB,
     performed_by VARCHAR(50) NOT NULL DEFAULT CURRENT_USER,
-    logged_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    logged_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================================================

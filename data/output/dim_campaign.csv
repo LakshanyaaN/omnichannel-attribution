@@ -1,0 +1,13 @@
+campaign_id,name,channel,is_active,created_at
+2ab5a780-e506-4458-90c9-34320d9dadeb,Google - Campaign 1: Growth,Google,True,2026-01-06T00:00:00
+f26317b0-1405-4d35-8957-20f5ef65ac81,Google - Campaign 2: Retention,Google,True,2026-01-11T00:00:00
+ef30f16b-4717-4300-8d15-dc4a83fb02a2,Google - Campaign 3: Brand Awareness,Google,True,2026-01-16T00:00:00
+9f103644-ed98-4474-93d8-2ae54eff0b6f,Meta - Campaign 1: Growth,Meta,True,2026-01-06T00:00:00
+7cc44075-42e6-4d3b-b1be-ec0fffee0038,Meta - Campaign 2: Retention,Meta,True,2026-01-11T00:00:00
+78644090-3e36-4116-9e47-43559448faae,Meta - Campaign 3: Brand Awareness,Meta,True,2026-01-16T00:00:00
+3426f9d4-edd8-43be-824a-3ed116ae5362,TikTok - Campaign 1: Growth,TikTok,True,2026-01-06T00:00:00
+fa67f8e7-5c62-4370-a322-8f61a68f46d2,TikTok - Campaign 2: Retention,TikTok,True,2026-01-11T00:00:00
+8ca0ac2b-6cd6-466d-81e3-a2ee4fc94804,TikTok - Campaign 3: Brand Awareness,TikTok,True,2026-01-16T00:00:00
+053bc9b3-e056-422f-b15f-0255b14ce250,Email - Campaign 1: Growth,Email,True,2026-01-06T00:00:00
+c3eae9b0-05a5-4e8c-b4d8-375644bcdd59,Email - Campaign 2: Retention,Email,True,2026-01-11T00:00:00
+2ed105dc-9b2b-4ac6-a7d5-e419073c9cff,Email - Campaign 3: Brand Awareness,Email,True,2026-01-16T00:00:00
