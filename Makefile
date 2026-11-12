@@ -32,6 +32,15 @@ test:
 	docker exec -i attribution_postgres psql -U postgres -d attribution_db < tests/02_attribution_test.sql
 	@echo "Running Phase 3 NoSQL & Vector RUD Tests..."
 	python tests/03_nosql_vector_rud_test.py
+	@echo "Running Phase 4 Concurrency & Row-Locking Tests..."
+	python tests/04_concurrency_test.py
+
+concurrency:
+	docker exec -i attribution_postgres psql -U postgres -d attribution_db < sql/07_concurrency_locking.sql
+	python tests/04_concurrency_test.py
+
+explain:
+	docker exec -i attribution_postgres psql -U postgres -d attribution_db < sql/08_query_optimization_demo.sql
 
 vector:
 	docker exec -i attribution_postgres psql -U postgres -d attribution_db < sql/06_vector_search.sql
